@@ -1,5 +1,5 @@
 {
-    "name": "khokonc\mvc-core",
+    "name": "khokonc/mvc-core",
     "description": "php framework",
     "autoload": {
         "psr-4": {
