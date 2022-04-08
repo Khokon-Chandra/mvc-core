@@ -1,7 +1,7 @@
 <?php
 
 
-namespace core\Database;
+namespace khokonc\mvc\Database;
 
 class Database extends \PDO
 {

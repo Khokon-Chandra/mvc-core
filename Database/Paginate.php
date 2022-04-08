@@ -1,6 +1,6 @@
 <?php
 
-namespace core\Database;
+namespace khokonc\mvc\Database;
 
 class Paginate
 {

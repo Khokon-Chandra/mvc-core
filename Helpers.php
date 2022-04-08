@@ -1,7 +1,7 @@
 <?php
 
 use app\Exceptions\HttpRedirectException;
-use core\Route\Route;
+use khokonc\mvc\Route\Route;
 
 
 $route = new Route();

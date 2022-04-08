@@ -1,5 +1,5 @@
 <?php
-namespace core\Exceptions;
+namespace khokonc\mvc\Exceptions;
 
 class DbException extends \Exception
 {

@@ -1,5 +1,5 @@
 <?php
-namespace core;
+namespace khokonc\mvc;
 
 class Rule
 {

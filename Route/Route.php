@@ -1,15 +1,15 @@
 <?php
 
-namespace core\Route;
+namespace khokonc\mvc\Route;
 
 use app\Controllers\Controller;
 use app\Exceptions\NotFoundException;
 use app\Exceptions\HttpRedirectException;
-use core\Auth;
-use core\Database\Database;
-use core\Request;
-use core\Session;
-use core\View;
+use khokonc\mvc\Auth;
+use khokonc\mvc\Database\Database;
+use khokonc\mvc\Request;
+use khokonc\mvc\Session;
+use khokonc\mvc\View;
 
 class Route
 {

@@ -1,8 +1,8 @@
 <?php
 
-namespace core;
+namespace khokonc\mvc;
 
-use core\Database\Database;
+use khokonc\mvc\Database\Database;
 
 class Validation
 {

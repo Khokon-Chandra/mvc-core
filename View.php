@@ -1,10 +1,10 @@
 <?php
 
-namespace core;
-use core\Route\Route;
+namespace khokonc\mvc;
+use khokonc\mvc\Route\Route;
 class View
 {
-    const ERROR_PATH = BASE_URL . '/core/errors.php';
+    const ERROR_PATH = BASE_URL . '/khokonc\mvc/errors.php';
     public $viewContent = '';
     private $path = '';
 

@@ -1,11 +1,11 @@
 <?php
 
-namespace core\Route;
+namespace khokonc\mvc\Route;
 
 use app\Exceptions\CsrfTokenNotVerified;
 use app\Exceptions\NotFoundException;
-use core\Auth;
-use core\Request;
+use khokonc\mvc\Auth;
+use khokonc\mvc\Request;
 
 class Router
 {

@@ -1,11 +1,11 @@
 <?php
 
-namespace core\Database;
+namespace khokonc\mvc\Database;
 
-use core\Database\Traits\ConditionString;
-use core\Database\Traits\Relations;
-use core\Request;
-use core\Route\Route;
+use khokonc\mvc\Database\Traits\ConditionString;
+use khokonc\mvc\Database\Traits\Relations;
+use khokonc\mvc\Request;
+use khokonc\mvc\Route\Route;
 
 abstract class Model
 {

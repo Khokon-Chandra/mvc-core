@@ -1,6 +1,6 @@
 <?php
 
-namespace core\Database\Traits;
+namespace khokonc\mvc\Database\Traits;
 
 trait Relations
 {
