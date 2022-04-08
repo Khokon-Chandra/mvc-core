@@ -1,8 +1,8 @@
 <?php
 
+
 use App\Exceptions\HttpRedirectException;
 use khokonc\mvc\Routes\Route;
-
 
 $route = new Route();
 
