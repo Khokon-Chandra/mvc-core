@@ -1,0 +1,16 @@
+{
+    "name": "khokon/mvc-core",
+    "description": "php framework",
+    "autoload": {
+        "psr-4": {
+            "Khokon\\MvcCore\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Khokon-Chandra",
+            "email": "khokonchandra4@gmail.com"
+        }
+    ],
+    "require": {}
+}
