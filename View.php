@@ -1,10 +1,13 @@
 <?php
 
-namespace khokonc\mvc;
+namespace khokonc\mvc\Views;
 use khokonc\mvc\Routes\Route;
 class View
 {
     const ERROR_PATH = BASE_URL . '/khokonc\mvc/errors.php';
+    const BASE_VIEW = BASE_URL . '/views';
+    const INCLUDE_PATTERN = '~@include\('|"[a-zA-Z0-9.]*"|'\)~mi';
+
     public $viewContent = '';
     private $path = '';
 
@@ -21,7 +24,7 @@ class View
     private function setViwPath($view)
     {
         $path = str_replace('.', '/', $this->removeExtention($view));
-        $this->path = BASE_URL . "/views/$path.php";
+        $this->path = self::BASE_VIEW . "/$path.php";
 
         if (!file_exists($this->path)) {
             $errorMessage = $view . " file not exists";
@@ -71,17 +74,26 @@ class View
 
         extract(['error' => $this->session->getFlashMessage('errors'), 'auth' => Route::$app->auth]);
         include $this->path;
-        return ob_get_clean();
+        $content = ob_get_clean();
+        return $this->renderInclude($content);
+
     }
 
 
-    public function getComponentDirectory($component = [])
+    private function renderInclude($content)
+    {
+        $pattern ="[a-zA-Z0-9.]*";
+        preg_match_all("~@include\('|".$pattern."|'\)/~",$content,$matches);
+
+    }
+
+    private function getComponentDirectory($component = [])
     {
         $firstMatch = $component[0];
         $componentName = ltrim($firstMatch, '<x-');
         $componentName = rtrim($componentName, '>');
         $componentName = str_replace('.', '/', $componentName);
-        $componentPath = BASE_URL . "/views/$componentName.php";
+        $componentPath = self::BASE_VIEW . "/$componentName.php";
         if (file_exists($componentPath) === false) {
             $this->renderError("component name " . $componentName . " not found");
             return false;
@@ -91,7 +103,7 @@ class View
 
 
 
-    public function hasComponent($string)
+    private function hasComponent($string)
     {
         preg_match_all('~<x-[a-zA-z0-9.]*>|</x-[a-zA-z0-9.]*>~mi', $string, $matches);
         if (count($matches[0]) === 2) {
@@ -108,7 +120,7 @@ class View
         return false;
     }
 
-    public function sliceViewContent(string $content, array $matches)
+    private function sliceViewContent(string $content, array $matches)
     {
         $content = str_replace($matches[0], '', $content);
         $content = str_replace($matches[1], '', $content);
@@ -117,7 +129,7 @@ class View
 
 
 
-    public function processComponent($view, $params = [])
+    private function processComponent($view, $params = [])
     {
         $viewObject = $this->getObject($params);
         $hasComponent = $this->hasComponent($viewObject);

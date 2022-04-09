@@ -9,7 +9,8 @@ use khokonc\mvc\Auth;
 use khokonc\mvc\Database\Database;
 use khokonc\mvc\Request;
 use khokonc\mvc\Session;
-use khokonc\mvc\View;
+
+use khokonc\mvc\Views\View;
 
 class Route
 {

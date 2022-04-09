@@ -1,7 +1,7 @@
 <?php
 namespace khokonc\mvc;
 
-use khokonc\mvc\Routes\Route;
+use khokonc\mvc\Routes\Route; 
 
 abstract class BaseMiddleware{
 

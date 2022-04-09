@@ -3,7 +3,7 @@
     "description": "php framework",
     "autoload": {
         "psr-4": {
-            "khokonc\\mvc\\": "."
+            "khokonc\\mvc\\": "/"
         }
     },
     "authors": [

@@ -67,9 +67,7 @@ function redirect(string $To)
 
 function dd($object)
 {
-    echo "<pre>";
-    var_dump($object);
-    echo "<pre>";
+    printf("<pre>%s</pre>",var_dump($object));
     exit();
 }
 
