@@ -2,29 +2,30 @@
 
 namespace khokonc\mvc\Views;
 
-class CompileInclude
+trait CompileInclude
 {
-    private const PATTERN = '~@include\("[a-zA-Z0-9._]*"\)~m';
-    private const BASE_VIEW = BASE_URL."/views";
-    private ?array $matches = null;
 
-   public function __construct($content)
-   {
-        $this->setMatches($content);
-        echo "<pre>";
-        print_r($this->matches);
 
-   }
-
-   private function parseObject()
-   {
-
-   }
 
     private function setMatches($content)
     {
         preg_match_all(self::PATTERN,$content,$matches);
         $this->matches = $matches[0];
+    }
+
+
+    public function renderInclude($content,$params)
+    {
+        $this->setMatches($content);
+        foreach($this->matches as $match){
+
+            $view = explode('"',$match)[1];
+            $path = $this->getViewDirectory($view);
+            $replacement = $this->getViewContent($path,$params);
+            $content = str_replace($match,$replacement,$content);
+        }
+        return $content;
+
     }
 
 

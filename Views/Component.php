@@ -16,11 +16,10 @@ trait Component
         $componentName = str_replace('.', '/', $componentName);
         $componentPath = self::BASE_VIEW . "/$componentName.php";
         if (!file_exists($componentPath)) {
-            throw new ComponentNotFoundException("component name " . $componentName . " not found",500);
+            throw new ComponentNotFoundException("component name " . $componentName . " not found", 500);
         }
         return $componentPath;
     }
-
 
 
     private function hasComponent($string)
@@ -34,7 +33,7 @@ trait Component
             if ($prefix === $postfix) {
                 return $matches;
             }
-            throw new InvalidComponentException([$prefix,$postfix]);
+            throw new InvalidComponentException([$prefix, $postfix]);
         }
         return false;
     }
@@ -47,17 +46,16 @@ trait Component
     }
 
 
-
     private function renderComponent($content)
     {
 
         $hasComponent = $this->hasComponent($content);
         $componentDirectory = $hasComponent ? $this->getComponentDirectory($hasComponent) : false;
-        $viewContent = $componentDirectory ?  $this->sliceViewContent($content, $hasComponent) : false;
+        $viewContent = $componentDirectory ? $this->sliceViewContent($content, $hasComponent) : false;
 
         if ($viewContent) {
-           return $this->getViewContent($componentDirectory,[
-                'slot' =>$viewContent
+            return $this->getViewContent($componentDirectory, [
+                'slot' => $viewContent
             ]);
         }
         return $content;

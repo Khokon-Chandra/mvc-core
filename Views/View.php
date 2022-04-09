@@ -1,17 +1,22 @@
 <?php
 
 namespace khokonc\mvc\Views;
+
 use khokonc\mvc\Request;
 use khokonc\mvc\Routes\Route;
 use khokonc\mvc\Session;
-use khokonc\mvc\Exceptions\ViewNotFoundException;
 
 class View
 {
-    use Component;
+    use Path, Component, CompileInclude;
 
     const BASE_VIEW = BASE_URL . '/views';
+
     const ERROR_PATH = BASE_URL . '/khokonc\mvc/errors.php';
+
+    private const PATTERN = '~@include\("[a-zA-Z0-9._]*"\)~m';
+
+    private ?array $matches = null;
 
     public Request $request;
     public Session $session;
@@ -20,29 +25,6 @@ class View
     {
         $this->request = $request;
         $this->session = $session;
-    }
-
-    private function removeExtention($view)
-    {
-        return str_replace('.php', '', $view);
-    }
-
-    private function parseDirectory($view)
-    {
-        $path = str_replace('.', '/', $this->removeExtention($view));
-        return $this->path = self::BASE_VIEW . "/$path.php";
-    }
-
-
-    private function getViewDirectory($view)
-    {
-        $path = $this->parseDirectory($view);
-
-        if (!file_exists($path)) {
-            $errorMessage = $view . " directory not found";
-            throw new ViewNotFoundException($errorMessage,5000);
-        }
-        return $path;
     }
 
 
@@ -63,33 +45,28 @@ class View
 
     public function getViewContent($path, $params = [])
     {
-        try {
-            ob_start();
-            if (!is_null($params)) {
-                extract($params);
-            }
-            extract([
-                'error' => $this->session->getFlashMessage('errors'),
-                'auth' => Route::$app->auth
-            ]);
-            include $path;
-            $content = ob_get_clean();
-            return $content;
-        }catch (\Exception $error){
-            return $error->getMessage();
+
+        ob_start();
+        if (!is_null($params)) {
+            extract($params);
         }
+        extract([
+            'error' => $this->session->getFlashMessage('errors'),
+            'auth' => Route::$app->auth
+        ]);
+        include $path;
+        $content = ob_get_clean();
+        return $content;
 
     }
 
 
-
-
     public function renderView(string $view, array $params = [])
     {
-        $path    = $this->getViewDirectory($view);
-        $content = $this->getViewContent($path,$params);
-        $content = new CompileInclude($content);
-//        $this->renderComponent($content);
+        $path = $this->getViewDirectory($view);
+        $content = $this->getViewContent($path, $params);
+        $content = $this->renderInclude($content, $params);
+        return $this->renderComponent($content);
 
 
     }
