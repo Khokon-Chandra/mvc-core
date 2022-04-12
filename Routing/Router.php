@@ -1,11 +1,14 @@
 <?php
 
-namespace khokonc\mvc\Routes;
+namespace khokonc\mvc\Routing;
 
+use khokonc\mvc\Application;
+use khokonc\mvc\Auth;
+use khokonc\mvc\Exceptions\InvalidRouteParametterException;
+use khokonc\mvc\Request;
 use App\Exceptions\CsrfTokenNotVerified;
 use App\Exceptions\NotFoundException;
-use khokonc\mvc\Auth;
-use khokonc\mvc\Request;
+use khokonc\mvc\Exceptions\MethodNotFoundException;
 
 class Router
 {
@@ -23,6 +26,16 @@ class Router
     private const CALLBACK = 'callback';
     private const MIDDLEWARE = 'middleware';
 
+    private array $patterns = [
+        '~/~',
+        '~{[^\/{}]+}~'
+    ];
+
+    private array $replacements = [
+        '/',
+        '([0-9a-zA-Z-_]++)',
+    ];
+
     public function __construct($request, $session, $auth)
     {
         $this->request = $request;
@@ -30,12 +43,15 @@ class Router
         $this->auth    = $auth;
     }
 
-    private function makeRoutePattern($path)
+    private function parseUrl($path)
     {
-        $pattern = "~{(\w+)}~";
-        $replacement = "(.*)";
-        $path    = preg_replace($pattern, $replacement, $path);
-        return "~^" . $path . "?$~";
+        if(str_contains($path,'(')){
+            throw new InvalidRouteParametterException('Invalide route Parametter ',500);
+        }
+        $newPath = preg_replace($this->patterns, $this->replacements, $path);
+        $newPath = trim($newPath, '\/?');
+        $newPath = trim($newPath, '\/');
+        return $newPath;
     }
 
 
@@ -54,7 +70,7 @@ class Router
     {
         $path = $this->prefix . $this->trimPath($path);
         $this->setTempRoute($path);
-        $this->routes['get'][$this->makeRoutePattern($path)] = [
+        $this->routes['get'][$this->parseUrl($path)] = [
             self::MIDDLEWARE => $this->middleware,
             self::CALLBACK => $callback
         ];
@@ -65,7 +81,7 @@ class Router
     {
         $path = $this->prefix . $this->trimPath($path);
         $this->setTempRoute($path);
-        $this->routes['post'][$this->makeRoutePattern($path)] = [
+        $this->routes['post'][$this->parseUrl($path)] = [
             self::MIDDLEWARE => $this->middleware,
             self::CALLBACK => $callback
         ];
@@ -91,7 +107,7 @@ class Router
         // edit method
         $this->get("$path/{id}/edit", [$class, 'edit'])->name("$path.edit");
         // update method
-        $this->post("$path/{id}/edit", [$class, 'update'])->name("$path.update");
+        $this->post("$path/{id}", [$class, 'update'])->name("$path.update");
         // destroy method
         $this->post("$path/{id}/delete", [$class, 'destroy'])->name("$path.destroy");
 
@@ -125,20 +141,17 @@ class Router
         if ($this->request->verifyCsrfTocken() === false && $this->request->isPost()) {
             throw new CsrfTokenNotVerified();
         }
-        $requestPath = $this->request->getPath();
+        $requestPath = trim($this->request->getPath(), '/');
         $routes      = $this->routes[$this->request->getMethod()];
-        foreach ($routes as $pattern => $callback) {
-
+        foreach ($routes as $route => $callback) {
             $middleware = $callback[self::MIDDLEWARE];
             $callback = $callback[self::CALLBACK];
 
-            $isMatch = preg_match($pattern, $requestPath);
+            $isMatch = preg_match('~^'.$route.'$~', $requestPath,$matches);
             if (!$isMatch) continue;
-
-            preg_match($pattern, $requestPath, $matches);
-
             if (is_array($callback)) {
-                $callback[0] = new $callback[0](Route::$app);
+                $classname = $callback[0];
+                $callback[0] = new $callback[0](Application::$app);
                 $controller  =  $callback[0];
                 $controller->setRequest($this->request);
                 $controller->setAuth($this->auth);
@@ -147,7 +160,10 @@ class Router
                 }
                 $middleware  = $controller->getMiddleware();
                 if (is_object($middleware)) {
-                    $middleware->handle(Route::$app);
+                    $middleware->handle(Application::$app);
+                }
+                if(!method_exists($callback[0],$callback[1])){
+                    throw new MethodNotFoundException("'$callback[1]' Method does not Exists inside $classname",404);
                 }
             }
             $matches = array_slice($matches, 1);

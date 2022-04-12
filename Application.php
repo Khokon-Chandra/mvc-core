@@ -1,26 +1,25 @@
 <?php
 
-namespace khokonc\mvc\Routes;
+namespace khokonc\mvc;
 
-use App\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\HttpRedirectException;
 use khokonc\mvc\Auth;
 use khokonc\mvc\Database\Database;
 use khokonc\mvc\Request;
+use khokonc\mvc\Routing\Router;
 use khokonc\mvc\Session;
 
 use khokonc\mvc\Views\View;
 
-class Route
+class Application
 {
     public View $view;
     public Request $request;
     public Session $session;
-    public Router $router;
     public Auth $auth;
-    public Controller $controller;
     public Database $db;
+    public Router $router;
     public static $app;
     public function __construct()
     {
@@ -33,30 +32,7 @@ class Route
         self::$app     = $this;
     }
 
-    public static function get($path, $callback)
-    {
-        return self::$app->router->get($path, $callback);
-    }
 
-    public static function post($path, $callback)
-    {
-        return self::$app->router->post($path, $callback);
-    }
-
-    public static function resource($path, $class)
-    {
-        return self::$app->router->resource($path, $class);
-    }
-
-    public static function group(array $attribute = [], $callback)
-    {
-        return self::$app->router->group($attribute, $callback);
-    }
-
-    public function name($name)
-    {
-        self::$app->router->name($name);
-    }
 
 
     public function run()

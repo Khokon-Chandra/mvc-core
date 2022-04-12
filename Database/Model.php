@@ -5,7 +5,7 @@ namespace khokonc\mvc\Database;
 use khokonc\mvc\Database\Traits\ConditionString;
 use khokonc\mvc\Database\Traits\Relations;
 use khokonc\mvc\Request;
-use khokonc\mvc\Routes\Route;
+use khokonc\mvc\Application;
 
 abstract class Model
 {
@@ -26,8 +26,8 @@ abstract class Model
 
     public function __construct()
     {
-        $this->db = Route::$app->db;
-        $this->request = Route::$app->request;
+        $this->db = Application::$app->db;
+        $this->request = Application::$app->request;
         $this->selectSql = "SELECT * FROM $this->table";
     }
 

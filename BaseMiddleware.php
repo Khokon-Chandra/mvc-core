@@ -1,10 +1,10 @@
 <?php
 namespace khokonc\mvc;
 
-use khokonc\mvc\Routes\Route; 
+use khokonc\mvc\Application; 
 
 abstract class BaseMiddleware{
 
-    abstract function handle(Route $app);
+    abstract function handle(Application $app);
     
 }

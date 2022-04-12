@@ -3,7 +3,7 @@
 namespace khokonc\mvc\Views;
 
 use khokonc\mvc\Request;
-use khokonc\mvc\Routes\Route;
+use khokonc\mvc\Application;
 use khokonc\mvc\Session;
 
 class View
@@ -52,7 +52,7 @@ class View
         }
         extract([
             'error' => $this->session->getFlashMessage('errors'),
-            'auth' => Route::$app->auth
+            'auth' => Application::$app->auth
         ]);
         include $path;
         $content = ob_get_clean();
@@ -65,9 +65,8 @@ class View
     {
         $path = $this->getViewDirectory($view);
         $content = $this->getViewContent($path, $params);
-        $content = $this->renderInclude($content, $params);
-        return $this->renderComponent($content);
-
+        $content = $this->renderComponent($content);
+        return $this->renderInclude($content, $params);
 
     }
 

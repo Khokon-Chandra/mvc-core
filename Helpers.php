@@ -2,15 +2,19 @@
 
 
 use App\Exceptions\HttpRedirectException;
-use khokonc\mvc\Routes\Route;
+use khokonc\mvc\Application;
 
-$route = new Route();
+$route = new Application();
 
-
+if (!function_exists('str_contains')) {
+    function str_contains($haystack, $needle) {
+        return $needle !== '' && mb_strpos($haystack, $needle) !== false;
+    }
+}
 
 function view(string $view, array $params = [])
 {
-    return Route::$app->view->renderView($view, $params);
+    return Application::$app->view->renderView($view, $params);
 }
 
 function getApp()
@@ -40,24 +44,30 @@ function asset(string $file)
 }
 
 
-function route($name, $params = [])
+function route($name, $params = null)
 {
-    $routeName =  Route::$app->router->routeNames[$name] ?? false;
+    $routeName =  Application::$app->router->routeNames[$name] ?? false;
     if ($routeName === false) {
-        Route::$app->view->renderError("Route name <i class='text-danger'>$name</i> not found");
+        Application::$app->view->renderError("Route name <i class='text-danger'>$name</i> not found");
         return Route::$view->viewContent;
     }
-    if (!empty($params)) {
+    if(is_null($params)){
+        return $routeName;
+    }
+    if (is_array($params)) {
         foreach ($params as $key => $value) {
             $routeName = str_replace("{{$key}}", $value, $routeName);
         }
+        return $routeName;
     }
-    return $routeName;
+
+   return str_replace('{id}',$params,$routeName);
+
 }
 
 function session_flash($key)
 {
-    return Route::$app->session->getFlashMessage($key);
+    return Application::$app->session->getFlashMessage($key);
 }
 
 function redirect(string $To)
