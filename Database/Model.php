@@ -76,6 +76,15 @@ abstract class Model
 
 
 
+    public function find($id)
+    {
+        $sql = "SELECT * FROM $this->table WHERE id=:id";
+        $statement = $this->db->prepare($sql);
+        $statement->bindValue(":id",$id);
+        $statement->execute();
+        $data = $statement->fetchObject(get_called_class());
+        return $this->hasRelation($data);
+    }
     public function first()
     {
         if (!empty($this->conditionString)) {
