@@ -5,6 +5,7 @@ namespace khokonc\mvc\Routing;
 use khokonc\mvc\Application;
 use khokonc\mvc\Auth;
 use khokonc\mvc\Exceptions\InvalidRouteParametterException;
+use khokonc\mvc\Exceptions\RouteNameNotFound;
 use khokonc\mvc\Request;
 use App\Exceptions\CsrfTokenNotVerified;
 use App\Exceptions\NotFoundException;
@@ -12,8 +13,10 @@ use khokonc\mvc\Exceptions\MethodNotFoundException;
 
 class Router
 {
-    private Request $request;
-    private Auth $auth;
+    public Request $request;
+    public Auth $auth;
+
+    private RouteResolver $resolver;
 
     public $routes = [];
     public $tempRoute   = '';
@@ -36,11 +39,11 @@ class Router
         '([0-9a-zA-Z-_]++)',
     ];
 
-    public function __construct($request, $session, $auth)
+    public function __construct(Request $request, Auth $auth)
     {
         $this->request = $request;
-        $this->session = $session;
         $this->auth    = $auth;
+        $this->resolver = new RouteResolver();
     }
 
     private function parseUrl($path)
@@ -136,40 +139,27 @@ class Router
     }
 
 
-    public function resolve()
-    {
-        if ($this->request->verifyCsrfTocken() === false && $this->request->isPost()) {
-            throw new CsrfTokenNotVerified();
-        }
-        $requestPath = trim($this->request->getPath(), '/');
-        $routes      = $this->routes[$this->request->getMethod()];
-        foreach ($routes as $route => $callback) {
-            $middleware = $callback[self::MIDDLEWARE];
-            $callback = $callback[self::CALLBACK];
+   public function resolve()
+   {
+        return $this->resolver->resolve($this);
+   }
 
-            $isMatch = preg_match('~^'.$route.'$~', $requestPath,$matches);
-            if (!$isMatch) continue;
-            if (is_array($callback)) {
-                $classname = $callback[0];
-                $callback[0] = new $callback[0](Application::$app);
-                $controller  =  $callback[0];
-                $controller->setRequest($this->request);
-                $controller->setAuth($this->auth);
-                if ($middleware !== null) {
-                    $controller->middleware($middleware);
-                }
-                $middleware  = $controller->getMiddleware();
-                if (is_object($middleware)) {
-                    $middleware->handle(Application::$app);
-                }
-                if(!method_exists($callback[0],$callback[1])){
-                    throw new MethodNotFoundException("'$callback[1]' Method does not Exists inside $classname",404);
-                }
-            }
-            $matches = array_slice($matches, 1);
-            array_unshift($matches, $this->request);
-            return call_user_func($callback, ...$matches);
-        }
-        throw new NotFoundException();
-    }
+   public function getRouteByName($routeName,$params = null)
+   {
+       $path =  $this->routeNames[$routeName] ?? false;
+       if ($path === false) {
+           throw new RouteNameNotFound($routeName);
+       }
+       if(is_null($params)){
+           return $path;
+       }
+       if (is_array($params)) {
+           foreach ($params as $key => $value) {
+               $path = str_replace("{{$key}}", $value, $path);
+           }
+           return $path;
+       }
+       return str_replace('{id}',$params,$path);
+   }
+
 }

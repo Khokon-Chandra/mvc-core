@@ -2,6 +2,8 @@
 
 namespace khokonc\mvc;
 
+use khokonc\mvc\Exceptions\HttpRedirectException;
+
 class Request extends Validation
 {
 
@@ -66,7 +68,7 @@ class Request extends Validation
         }
 
         $this->session->setFlashMessage('errors', $this->errors);
-        redirect($_SERVER["HTTP_REFERER"]);
+        throw new HttpRedirectException($_SERVER["HTTP_REFERER"]);
     }
 
 

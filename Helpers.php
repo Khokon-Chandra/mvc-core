@@ -1,7 +1,5 @@
 <?php
 
-
-use App\Exceptions\HttpRedirectException;
 use khokonc\mvc\Application;
 
 $route = new Application();
@@ -46,23 +44,7 @@ function asset(string $file)
 
 function route($name, $params = null)
 {
-    $routeName =  Application::$app->router->routeNames[$name] ?? false;
-    if ($routeName === false) {
-        Application::$app->view->renderError("Route name <i class='text-danger'>$name</i> not found");
-        return Route::$view->viewContent;
-    }
-    if(is_null($params)){
-        return $routeName;
-    }
-    if (is_array($params)) {
-        foreach ($params as $key => $value) {
-            $routeName = str_replace("{{$key}}", $value, $routeName);
-        }
-        return $routeName;
-    }
-
-   return str_replace('{id}',$params,$routeName);
-
+   return Application::$app->router->getRouteByName($name,$params);
 }
 
 function session_flash($key)
@@ -70,9 +52,9 @@ function session_flash($key)
     return Application::$app->session->getFlashMessage($key);
 }
 
-function redirect(string $To)
+function redirect(string $to = null)
 {
-    throw new HttpRedirectException($To);
+    return new \khokonc\mvc\Http\HttpRedirectResponse($to);
 }
 
 function dd($object)
