@@ -19,11 +19,11 @@ class Router
     private RouteResolver $resolver;
 
     public $routes = [];
-    public $tempRoute   = '';
+    public $tempRoute = '';
     public $routeNames = [];
 
 
-    private $prefix     = '';
+    private $prefix = '';
     private $middleware = null;
 
     private const CALLBACK = 'callback';
@@ -42,21 +42,20 @@ class Router
     public function __construct(Request $request, Auth $auth)
     {
         $this->request = $request;
-        $this->auth    = $auth;
+        $this->auth = $auth;
         $this->resolver = new RouteResolver();
     }
 
     private function parseUrl($path)
     {
-        if(str_contains($path,'(')){
-            throw new InvalidRouteParametterException('Invalide route Parametter ',500);
+        if (str_contains($path, '(')) {
+            throw new InvalidRouteParametterException('Invalide route Parametter ', 500);
         }
         $newPath = preg_replace($this->patterns, $this->replacements, $path);
         $newPath = trim($newPath, '\/?');
         $newPath = trim($newPath, '\/');
         return $newPath;
     }
-
 
     private function trimPath($path)
     {
@@ -67,7 +66,6 @@ class Router
     {
         $this->tempRoute = APP_URL . $path;
     }
-
 
     public function get($path, $callback)
     {
@@ -93,7 +91,7 @@ class Router
 
     /**
      * Register Resource route
-     * @param string $path, $class
+     * @param string $path , $class
      * @return Router
      */
 
@@ -139,27 +137,27 @@ class Router
     }
 
 
-   public function resolve()
-   {
+    public function resolve()
+    {
         return $this->resolver->resolve($this);
-   }
+    }
 
-   public function getRouteByName($routeName,$params = null)
-   {
-       $path =  $this->routeNames[$routeName] ?? false;
-       if ($path === false) {
-           throw new RouteNameNotFound($routeName);
-       }
-       if(is_null($params)){
-           return $path;
-       }
-       if (is_array($params)) {
-           foreach ($params as $key => $value) {
-               $path = str_replace("{{$key}}", $value, $path);
-           }
-           return $path;
-       }
-       return str_replace('{id}',$params,$path);
-   }
+    public function getRouteByName($routeName, $params = null)
+    {
+        $path = $this->routeNames[$routeName] ?? false;
+        if ($path === false) {
+            throw new RouteNameNotFound($routeName);
+        }
+        if (is_null($params)) {
+            return $path;
+        }
+        if (is_array($params)) {
+            foreach ($params as $key => $value) {
+                $path = str_replace("{{$key}}", $value, $path);
+            }
+            return $path;
+        }
+        return str_replace('{id}', $params, $path);
+    }
 
 }

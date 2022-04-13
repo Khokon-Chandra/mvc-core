@@ -46,17 +46,22 @@ class View
     public function getViewContent($path, $params = [])
     {
 
-        ob_start();
-        if (!is_null($params)) {
-            extract($params);
+        try {
+            ob_start();
+            if (!is_null($params)) {
+                extract($params);
+            }
+            extract([
+                'error' => $this->session->getFlashMessage('errors'),
+                'auth' => Application::$app->auth
+            ]);
+            include $path;
+            $content = ob_get_clean();
+            return $content;
+        }catch (\Exception $error)
+        {
+            return $error->getMessage();
         }
-        extract([
-            'error' => $this->session->getFlashMessage('errors'),
-            'auth' => Application::$app->auth
-        ]);
-        include $path;
-        $content = ob_get_clean();
-        return $content;
 
     }
 
