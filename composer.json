@@ -12,5 +12,7 @@
             "email": "khokonchandra4@gmail.com"
         }
     ],
-    "require": {}
+    "require": {
+        "php": "^7.4.0"
+    }
 }
