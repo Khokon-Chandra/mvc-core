@@ -19,11 +19,14 @@ class Session
             $flashmessage['remove'] = true;
         }
         $_SESSION[self::FLASH_KEY] = $flashMessages;
+        $this->setToken();
     }
 
     public function setToken()
     {
-        $this->set(self::TOKEN, $this->getRandomString(30));
+       if(empty($this->getToken())){
+           $this->set(self::TOKEN, $this->getRandomString(30));
+       }
     }
 
     public function getToken()

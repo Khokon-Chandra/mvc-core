@@ -11,17 +11,39 @@ abstract class Model
 {
     use ConditionString, Relations;
 
-    const BELONGSTO = 'belongsTo';
-    const HASMANY   = 'hasMany';
+    private const BELONGSTO = 'belongsTo';
+    private const HASMANY   = 'hasMany';
 
-
+    /*
+     * Database connection
+     * */
     private Database $db;
+    /*
+     * Http Request
+     */
     private Request $request;
+    /*
+     * Condition string
+     */
     private string $conditionString = '';
+    /*
+     * @Array conditional bind paramitter
+     */
+    private array $valueAndParameters = [];
+
+    /*
+     * Array of relationships
+     */
     private $relations = [];
 
+    /*
+     * Table retrive select query
+     */
     private $selectSql;
 
+    /*
+     * Model table name
+     */
     protected  $table;
 
     public function __construct()
@@ -46,10 +68,9 @@ abstract class Model
         if (!empty($this->conditionString)) {
             $this->selectSql .= " WHERE $this->conditionString";
         }
-
         $statement = $this->db->prepare($this->selectSql);
+        $this->bindValue($statement);
         $statement->execute();
-
         $data = $statement->fetchAll(\PDO::FETCH_CLASS, get_called_class());
         return $this->hasRelation($data);
     }
@@ -74,8 +95,6 @@ abstract class Model
     }
 
 
-
-
     public function find($id)
     {
         $sql = "SELECT * FROM $this->table WHERE id=:id";
@@ -85,12 +104,15 @@ abstract class Model
         $data = $statement->fetchObject(get_called_class());
         return $this->hasRelation($data);
     }
+
+
     public function first()
     {
         if (!empty($this->conditionString)) {
             $this->selectSql .= " WHERE $this->conditionString";
         }
         $statement = $this->db->prepare($this->selectSql);
+        $this->bindValue($statement);
         $statement->execute();
         $data = $statement->fetchObject(get_called_class());
         return $this->hasRelation($data);
@@ -120,16 +142,19 @@ abstract class Model
 
 
         $statement = $this->db->prepare($sql);
+        $this->bindValue($statement);
         $statement->execute();
-
         $data = $statement->fetchAll(\PDO::FETCH_CLASS, get_called_class());
 
-        $this->conditionString = '';
+
         $data = $this->hasRelation($data);
 
         $statement = $this->db->prepare($aggregateSql);
         $statement->execute();
         $aggregate = $statement->fetchObject()->aggregate;
+
+        $this->conditionString = '';
+        $this->valueAndParameters = [];
 
         $paginate = new Paginate([
             "limit"       => $limit,

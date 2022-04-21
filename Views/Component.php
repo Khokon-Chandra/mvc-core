@@ -48,7 +48,6 @@ trait Component
 
     private function renderComponent($content)
     {
-
         $hasComponent = $this->hasComponent($content);
         $componentDirectory = $hasComponent ? $this->getComponentDirectory($hasComponent) : false;
         $viewContent = $componentDirectory ? $this->sliceViewContent($content, $hasComponent) : false;

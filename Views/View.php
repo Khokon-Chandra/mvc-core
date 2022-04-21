@@ -8,9 +8,9 @@ use khokonc\mvc\Session;
 
 class View
 {
-    use Path, Component, CompileInclude;
+    use Path, Component, CompileInclude,Csrf;
 
-    const BASE_VIEW = BASE_URL . '/views';
+    const BASE_VIEW = VIEW_PATH;
 
     const ERROR_PATH = BASE_URL . '/khokonc\mvc/errors.php';
 
@@ -71,8 +71,9 @@ class View
         $path = $this->getViewDirectory($view);
         $content = $this->getViewContent($path, $params);
         $content = $this->renderComponent($content);
-        return $this->renderInclude($content, $params);
-
+        $content = $this->renderInclude($content, $params);
+        $content = $this->renderCsrf($content);
+        return $content;
     }
 
 

@@ -24,9 +24,6 @@ function getApp()
 function _token()
 {
     $app = getApp();
-    if (empty($app->session->getToken())) {
-        $app->session->setToken();
-    }
     return $app->session->getToken();
 }
 
