@@ -4,14 +4,14 @@ namespace khokonc\mvc\Routing;
 
 interface RouteInterface
 {
-    public static function get(string $path,callable $callback):Router;
+    public function get($path, $callback);
 
-    public static function post():Route;
+    public function post():Router;
 
-    public static function group():Route;
+    public function group():Router;
 
-    public static function prefix():Route;
+    public function prefix():Router;
 
-    public static function resource():Route;
+    public function resource():Router;
 
 }

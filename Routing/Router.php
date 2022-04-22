@@ -2,106 +2,81 @@
 
 namespace khokonc\mvc\Routing;
 
-use khokonc\mvc\Application;
-use khokonc\mvc\Auth;
-use khokonc\mvc\Exceptions\InvalidRouteParametterException;
-use khokonc\mvc\Exceptions\RouteNameNotFound;
-use khokonc\mvc\Request;
 use App\Exceptions\CsrfTokenNotVerified;
-use App\Exceptions\NotFoundException;
-use khokonc\mvc\Exceptions\MethodNotFoundException;
+use khokonc\mvc\Application;
+use khokonc\mvc\Exceptions\RouteNameNotFound;
+use khokonc\mvc\Routing\Routes\Route;
+use khokonc\mvc\Routing\Routes\RouteFactory;
+
 
 class Router
 {
-    public Request $request;
-    public Auth $auth;
-
+    /**
+     * @var array key=>get|post |Route instance
+     */
+    public array $routes = [];
+    /**
+     * @var RouteResolver object for resolving route
+     */
     private RouteResolver $resolver;
+    /**
+     * @var RouteFactory Single route Refactoring
+     */
+    private RouteFactory $routeFactory;
+    /**
+     * @var Route temporary instance of Route
+     */
+    private Route $route;
+    /**
+     * @var array Registered route by name
+     */
+    private array $routeNames = [];
+    /**
+     * @var string Route prefix
+     */
+    private ?string $prefix = null;
 
-    public $routes = [];
-    public $tempRoute = '';
-    public $routeNames = [];
+    /**
+     * @var string Route middleware key
+     */
+    private ?string $middleware = null;
 
 
-    private $prefix = '';
-    private $middleware = null;
-
-    private const CALLBACK = 'callback';
-    private const MIDDLEWARE = 'middleware';
-
-    private array $patterns = [
-        '~/~',
-        '~{[^\/{}]+}~'
-    ];
-
-    private array $replacements = [
-        '/',
-        '([0-9a-zA-Z-_]++)',
-    ];
-
-    public function __construct(Request $request, Auth $auth)
+    public function __construct()
     {
-        $this->request = $request;
-        $this->auth = $auth;
+        $this->routeFactory = new RouteFactory();
         $this->resolver = new RouteResolver();
     }
 
-    private function parseUrl($path)
-    {
-        if (str_contains($path, '(')) {
-            throw new InvalidRouteParametterException('Invalide route Parametter ', 500);
-        }
-        $newPath = preg_replace($this->patterns, $this->replacements, $path);
-        $newPath = trim($newPath, '\/?');
-        $newPath = trim($newPath, '\/');
-        return $newPath;
-    }
 
-    private function trimPath($path)
-    {
-        return '/' . trim($path, '/');
-    }
-
-    private function setTempRoute($path)
-    {
-        $this->tempRoute = APP_URL . $path;
-    }
 
     public function get($path, $callback)
     {
-        $path = $this->prefix . $this->trimPath($path);
-        $this->setTempRoute($path);
-        $this->routes['get'][$this->parseUrl($path)] = [
-            self::MIDDLEWARE => $this->middleware,
-            self::CALLBACK => $callback
-        ];
-        return $this;
+        $route = $this->set($path, 'get', $callback);
+        return $route;
     }
 
     public function post($path, $callback)
     {
-        $path = $this->prefix . $this->trimPath($path);
-        $this->setTempRoute($path);
-        $this->routes['post'][$this->parseUrl($path)] = [
-            self::MIDDLEWARE => $this->middleware,
-            self::CALLBACK => $callback
-        ];
-        return $this;
+        $route = $this->set($path, 'post', $callback);
+        return $route;
     }
 
     /**
      * Register Resource route
      * @param string $path , $class
+     *
      * @return Router
      */
 
     public function resource($path, $class)
     {
+        $path = trim($path, '/');
         // registered Index method
         $this->get($path, [$class, 'index'])->name("$path.index");
         // registered create method
         $this->get("$path/create", [$class, 'create'])->name("$path.create");
-        // Store metod
+        // Store method
         $this->post($path, [$class, 'store'])->name("$path.store");
         // show method
         $this->get("$path/{id}", [$class, 'show'])->name("$path.show");
@@ -111,29 +86,23 @@ class Router
         $this->post("$path/{id}", [$class, 'update'])->name("$path.update");
         // destroy method
         $this->post("$path/{id}/delete", [$class, 'destroy'])->name("$path.destroy");
-
-        return $this;
+        return $this->route;
     }
 
-
-    public function group($attribute, $callback)
+    public function group($attribute = null, $callback = null)
     {
-        $this->prefix = isset($attribute['prefix']) ? '/' . trim($attribute['prefix'], '/') : '';
-        $this->middleware = $attribute['middleware'] ?? null;
+        if (is_array($attribute)) {
+            $this->prefix = $attribute['prefix'] ?? null;
+            $this->middleware = $attribute['middleware'] ?? null;
+        }
+        if (is_callable($attribute)) {
+            call_user_func($attribute);
+        }
         if (is_callable($callback)) {
             call_user_func($callback);
         }
-        return $this;
-    }
-
-
-    /**
-     * Register Route name here
-     */
-
-    public function name($name)
-    {
-        $this->routeNames[$name] = $this->tempRoute;
+        $this->prefix = null;
+        $this->middleware = null;
     }
 
 
@@ -142,22 +111,32 @@ class Router
         return $this->resolver->resolve($this);
     }
 
-    public function getRouteByName($routeName, $params = null)
+    public function getRouteByName($name, $params = null)
     {
-        $path = $this->routeNames[$routeName] ?? false;
-        if ($path === false) {
-            throw new RouteNameNotFound($routeName);
-        }
-        if (is_null($params)) {
-            return $path;
-        }
-        if (is_array($params)) {
-            foreach ($params as $key => $value) {
-                $path = str_replace("{{$key}}", $value, $path);
+        $routes = array_merge($this->routes['get'],$this->routes['post']);
+        foreach ($routes as $route) {
+            if ($route->name !== $name) continue;
+            $path = APP_URL . "/" . $route->noRegexPath;
+            if (is_null($params)) return $path;
+            if (is_array($params)) {
+                foreach ($params as $key => $value) {
+                    $path = str_replace("{{$key}}", $value, $path);
+                }
+                return $path;
             }
-            return $path;
+            return str_replace('{id}', $params, $path);
         }
-        return str_replace('{id}', $params, $path);
+        throw new RouteNameNotFound($name);
+    }
+
+    private function set($path, $method, $callback)
+    {
+        $route = $this->routeFactory->create($path, $method, $callback);
+        $this->routes[$route->method][] = $route;
+        $this->route = $route;
+        $route->prefix($this->prefix);
+        $route->middleware($this->middleware);
+        return $route;
     }
 
 }

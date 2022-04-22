@@ -2,8 +2,6 @@
 
 use khokonc\mvc\Application;
 
-$route = new Application();
-
 if (!function_exists('str_contains')) {
     function str_contains($haystack, $needle) {
         return $needle !== '' && mb_strpos($haystack, $needle) !== false;
@@ -15,16 +13,10 @@ function view(string $view, array $params = [])
     return Application::$app->view->renderView($view, $params);
 }
 
-function getApp()
-{
-    global $route;
-    return $route;
-}
 
 function _token()
 {
-    $app = getApp();
-    return $app->session->getToken();
+    return Application::$app->session->getToken();
 }
 
 function csrf_token()
@@ -35,7 +27,7 @@ function csrf_token()
 
 function asset(string $file)
 {
-    echo APP_URL . '/' . trim($file, '/');
+    return APP_URL . '/' . trim($file, '/');
 }
 
 
@@ -56,8 +48,9 @@ function redirect(string $to = null)
 
 function dd($object)
 {
-    printf("<pre>%s</pre>",var_dump($object));
-    exit();
+    echo "<pre>";
+    var_dump($object);
+    die();
 }
 
 

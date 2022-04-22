@@ -14,7 +14,8 @@
     <div class="card mt-5">
         <div class="card-header alert-danger">Errr Page</div>
         <div class="card-body">
-            <p><?= $errors ?></p>
+            <h3><?= $code ?? 0 ?></h3>
+            <p><?= $message ?></p>
         </div>
     </div>
 </div>

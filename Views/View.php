@@ -12,7 +12,7 @@ class View
 
     const BASE_VIEW = VIEW_PATH;
 
-    const ERROR_PATH = BASE_URL . '/khokonc\mvc/errors.php';
+    const ERROR_PATH = __DIR__.'/../errors.php';
 
     private const PATTERN = '~@include\("[a-zA-Z0-9._]*"\)~m';
 
@@ -25,6 +25,15 @@ class View
     {
         $this->request = $request;
         $this->session = $session;
+    }
+
+
+    public function renderError($message,$code)
+    {
+        return $this->getViewContent(self::ERROR_PATH,[
+            'message' =>$message,
+            'code' =>$code
+        ]);
     }
 
 

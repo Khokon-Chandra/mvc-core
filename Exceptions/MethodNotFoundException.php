@@ -6,8 +6,10 @@ namespace khokonc\mvc\Exceptions;
 
 class MethodNotFoundException extends \Exception
 {
-    public function __construct($message = "", $code = 500)
+    protected $message;
+    protected $code = 405;
+    public function __construct($action,$controller)
     {
-        parent::__construct($message, $code);
+        $this->message = "$action method does'nt exists inside $controller";
     }
 }

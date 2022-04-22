@@ -74,14 +74,14 @@ class Request extends Validation
 
     public function getPath()
     {
-        $path = rtrim($_SERVER['REQUEST_URI'], '/');
+        $path = trim($_SERVER['REQUEST_URI'], '/');
         $path = empty($path) ? '/' : $path;
         $position = strpos($path, '?');
         if ($position === false) {
             return $path;
-        } else {
-            return $path = substr($path, 0, $position);
         }
+        return $path = substr($path, 0, $position);
+
     }
 
     public function getMethod()

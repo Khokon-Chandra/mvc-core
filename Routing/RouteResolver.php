@@ -7,6 +7,8 @@ use App\Exceptions\NotFoundException;
 use khokonc\mvc\Application;
 use khokonc\mvc\Exceptions\CsrfTokenNotVerified;
 use khokonc\mvc\Exceptions\MethodNotFoundException;
+use khokonc\mvc\Exceptions\MiddlewareNotFoundException;
+use khokonc\mvc\Routing\Routes\Route;
 
 class RouteResolver
 {
@@ -15,42 +17,68 @@ class RouteResolver
 
     public function resolve(Router $router)
     {
-        if ($router->request->verifyCsrfTocken() === false && $router->request->isPost()) {
+        $requestPath = Application::$app->request->getPath();
+        $routes      = $router->routes[Application::$app->request->getMethod()] ?? false;
+
+        if (Application::$app->request->verifyCsrfTocken() === false && Application::$app->request->isPost()) {
             throw new CsrfTokenNotVerified();
         }
-        $requestPath = trim($router->request->getPath(), '/');
-        $routes = $router->routes[$router->request->getMethod()] ?? false;
+
         if ($routes == false) {
             throw new NotFoundException();
         }
-        foreach ($routes as $route => $callback) {
-            $middleware = $callback[self::MIDDLEWARE];
-            $callback   = $callback[self::CALLBACK];
-
-            $isMatch = preg_match('~^' . $route . '$~', $requestPath, $matches);
+        foreach ($routes as $route) {
+            $isMatch = preg_match('~^' . $route->path . '$~', $requestPath, $matches);
             if (!$isMatch) continue;
-            if (is_array($callback)) {
-                $classname = $callback[0];
-                $callback[0] = new $callback[0](Application::$app);
-                $controller = $callback[0];
-                $controller->setRequest($router->request);
-                $controller->setAuth($router->auth);
-                if ($middleware !== null) {
-                    $controller->middleware($middleware);
-                }
-                $middleware = $controller->getMiddleware();
-                if (is_object($middleware)) {
-                    $middleware->handle(Application::$app);
-                }
-                if (!method_exists($callback[0], $callback[1])) {
-                    throw new MethodNotFoundException("'$callback[1]' Method does not Exists inside $classname", 404);
-                }
-            }
+            if(is_string($route->callback)) return $route->callback;
+            $this->refactorCallback($route);
+            $this->callMiddleware($route);
             $matches = array_slice($matches, 1);
-            array_unshift($matches, $router->request);
-            return call_user_func($callback, ...$matches);
+            array_unshift($matches, Application::$app->request);
+            return call_user_func($route->callback, ...$matches);
         }
         throw new NotFoundException();
+    }
+
+
+    private function refactorCallback(Route $route)
+    {
+        if (is_array($route->callback)) {
+            $route->classname = $route->callback[0];
+            $route->action = $route->callback[1];
+            $route->controller = new $route->classname();
+            $route->controller->set(Application::$app);
+            $route->callback = [$route->controller, $route->action];
+            $this->setMiddleware($route);
+            if (!method_exists($route->controller, $route->action)) {
+                throw new MethodNotFoundException($route->action,$route->classname);
+            }
+        }
+
+    }
+
+
+    private function setMiddleware(Route $route)
+    {
+        if($route->middleware == null)
+        {
+            $route->middleware = $route->controller->getMiddleware();
+        }
+    }
+
+
+
+    private function callMiddleware($route)
+    {
+        if ($route->middleware !== null) {
+            $middleware = Application::$app->middleware[$route->middleware] ?? false;
+            if($middleware == false)
+            {
+                throw new MiddlewareNotFoundException($route->middleware);
+            }
+            $middleware = new $middleware();
+            $middleware->handle(Application::$app);
+        }
     }
 
 }
