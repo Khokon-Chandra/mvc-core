@@ -161,7 +161,7 @@ abstract class Model
             "aggregate"   => $aggregate,
             "data"        => $data,
             "currentPage" => $this->request->page ?? 1,
-            "path"        => APP_URL ."/". $this->request->getPath(),
+            "path"        => config('app.app_url') ."/". $this->request->getPath(),
         ]);
 
         return $paginate;

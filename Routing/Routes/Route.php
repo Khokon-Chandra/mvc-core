@@ -40,7 +40,7 @@ class Route
 
     private function setTempRoute($path)
     {
-        $this->tempRoute = APP_URL . $path;
+        $this->tempRoute = config('app.app_url') . $path;
     }
 
 }
