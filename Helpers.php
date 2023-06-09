@@ -58,3 +58,20 @@ function app($classname)
 {
     return new $classname();
 }
+
+
+function config($path)
+{
+    $paths = explode('.',$path);
+
+    $configs = include($paths[0]);
+
+    array_shift($paths);
+
+    $data = $configs;
+
+    foreach($paths as $key){
+        $data = $data[$key];
+    }
+    return $data;
+}
