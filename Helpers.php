@@ -27,7 +27,7 @@ function csrf_token()
 
 function asset(string $file)
 {
-    return APP_URL . '/' . trim($file, '/');
+    return config('app.app_url') . '/' . trim($file, '/');
 }
 
 
@@ -64,7 +64,7 @@ function config($path)
 {
     $paths = explode('.',$path);
 
-    $configs = include($paths[0]);
+    $configs = include(__DIR__."/../../../config/".$paths[0].".php");
 
     array_shift($paths);
 

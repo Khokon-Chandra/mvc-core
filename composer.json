@@ -14,5 +14,8 @@
     ],
     "require": {
         "php": "^7.4|^8.0"
+    },
+    "require-dev": {
+        "symfony/dotenv": "^6.3"
     }
 }

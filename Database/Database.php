@@ -8,9 +8,10 @@ class Database extends \PDO
 
     public function __construct()
     {
-        $dsn      = "mysql:host=" . DB_HOST . ";port=3306;dbname=" . DB_NAME;
-        $username = USER_NAME;
-        $password = PASSWORD;
+        
+        $dsn      = "mysql:host=" . config('app.database.host') . ";port=". config('app.database.port') .";dbname=" . config('app.database.name');
+        $username = config('app.database.user');
+        $password = config('app.database.password');
         try {
             parent::__construct($dsn, $username, $password);
             $this->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);

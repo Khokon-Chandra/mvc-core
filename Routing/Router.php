@@ -2,8 +2,6 @@
 
 namespace khokonc\mvc\Routing;
 
-use App\Exceptions\CsrfTokenNotVerified;
-use khokonc\mvc\Application;
 use khokonc\mvc\Exceptions\RouteNameNotFound;
 use khokonc\mvc\Routing\Routes\Route;
 use khokonc\mvc\Routing\Routes\RouteFactory;
@@ -116,7 +114,7 @@ class Router
         $routes = array_merge($this->routes['get'],$this->routes['post']);
         foreach ($routes as $route) {
             if ($route->name !== $name) continue;
-            $path = APP_URL . "/" . $route->noRegexPath;
+            $path = config('app.app_url') . "/" . $route->noRegexPath;
             if (is_null($params)) return $path;
             if (is_array($params)) {
                 foreach ($params as $key => $value) {
