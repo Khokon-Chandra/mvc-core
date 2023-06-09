@@ -14,7 +14,7 @@ trait Component
         $componentName = ltrim($firstMatch, '<x-');
         $componentName = rtrim($componentName, '>');
         $componentName = str_replace('.', '/', $componentName);
-        $componentPath = self::BASE_VIEW . "/$componentName.php";
+        $componentPath = config('app.view_path') . "/$componentName.php";
         if (!file_exists($componentPath)) {
             throw new ComponentNotFoundException("component name " . $componentName . " not found", 500);
         }

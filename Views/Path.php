@@ -14,7 +14,7 @@ trait Path
     private function parseDirectory($view)
     {
         $path = str_replace('.', '/', $this->removeExtention($view));
-        return $this->path = self::BASE_VIEW . "/$path.php";
+        return $this->path = config('app.view_path') . "/$path.php";
     }
 
 

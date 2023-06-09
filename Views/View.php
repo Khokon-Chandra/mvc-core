@@ -10,8 +10,6 @@ class View
 {
     use Path, Component, CompileInclude,Csrf;
 
-    const BASE_VIEW = VIEW_PATH;
-
     const ERROR_PATH = __DIR__.'/../errors.php';
 
     private const PATTERN = '~@include\("[a-zA-Z0-9._]*"\)~m';

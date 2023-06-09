@@ -5,10 +5,12 @@ namespace khokonc\mvc;
 class Auth
 {
     private $session;
-    private $key = 'auth_' . APP_KEY;
+
+    private $key ;
 
     public function __construct(Session $session)
     {
+        $this->key = 'auth_' . config('app.app_key');
         $this->session = $session;
     }
 

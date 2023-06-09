@@ -48,7 +48,7 @@ class Application
     private function loadCredential()
     {
         require_once "Helpers.php";
-        $this->middleware = require_once BASE_URL."/app/Kernel.php";
+        $this->middleware = require_once config('app.base_url')."/app/Kernel.php";
     }
 
 
@@ -62,7 +62,7 @@ class Application
              return $response;
         } catch (NotFoundException $error) {
             http_response_code($error->getCode());
-            $view = VIEW_PATH_FOR_ERRORS."/404.php";
+            $view = config('app.error_view_path')."/404.php";
             if (file_exists($view)) {
                 return view('errors.404', [
                     'pageTitle' => 'Page not found',
@@ -77,7 +77,7 @@ class Application
         }
         catch (\Exception $error) {
             http_response_code($error->getCode());
-            if(APP_DEBUG){
+            if(config('app.app_debug')){
                 return $this->view->renderError($error->getMessage(),$error->getCode());
             }
             return $error->getMessage();
