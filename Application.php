@@ -48,7 +48,9 @@ class Application
     private function loadCredential()
     {
         require_once "Helpers.php";
+        
         $this->middleware = require_once config('app.base_url')."/app/Kernel.php";
+        
     }
 
 
